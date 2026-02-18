@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>網頁計算機</title>
+    <style>
+        /* CSS: 樣式設計 */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #222; /* 背景顏色 */
+            margin: 0;
+        }
+
+        .calculator {
+            background-color: #333;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            padding: 20px;
+            width: 320px;
+        }
+
+        #display {
+            width: 100%;
+            height: 80px;
+            background-color: #444;
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 2.5rem;
+            text-align: right;
+            padding: 0 15px; /* 內距 */
+            box-sizing: border-box; /* 確保 padding 不會撐大寬度 */
+            margin-bottom: 20px;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4列 */
+            gap: 15px;
+        }
+
+        button {
+            padding: 20px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            font-weight: bold;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        /* 數字按鈕樣式 */
+        .btn-number {
+            background-color: #555;
+            color: white;
+        }
+        .btn-number:hover {
+            background-color: #666;
+        }
+
+        /* 運算符號樣式 */
+        .btn-operator {
+            background-color: #f39c12;
+            color: white;
+        }
+        .btn-operator:hover {
+            background-color: #e67e22;
+        }
+
+        /* 功能鍵樣式 (C, DEL) */
+        .btn-function {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .btn-function:hover {
+            background-color: #c0392b;
+        }
+
+        /* 等號按鈕樣式 */
+        .btn-equal {
+            background-color: #2ecc71;
+            grid-column: span 2; /* 佔據兩格 */
+            color: white;
+        }
+        .btn-equal:hover {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator">
+        <input type="text" id="display" readonly>
+        <div class="buttons">
+            <button class="btn-function" onclick="clearDisplay()">C</button>
+            <button class="btn-function" onclick="deleteLast()">DEL</button>
+            <button class="btn-operator" onclick="appendOperator('%')">%</button>
+            <button class="btn-operator" onclick="appendOperator('/')">÷</button>
+            
+            <button class="btn-number" onclick="appendNumber('7')">7</button>
+            <button class="btn-number" onclick="appendNumber('8')">8</button>
+            <button class="btn-number" onclick="appendNumber('9')">9</button>
+            <button class="btn-operator" onclick="appendOperator('*')">×</button>
+            
+            <button class="btn-number" onclick="appendNumber('4')">4</button>
+            <button class="btn-number" onclick="appendNumber('5')">5</button>
+            <button class="btn-number" onclick="appendNumber('6')">6</button>
+            <button class="btn-operator" onclick="appendOperator('-')">-</button>
+            
+            <button class="btn-number" onclick="appendNumber('1')">1</button>
+            <button class="btn-number" onclick="appendNumber('2')">2</button>
+            <button class="btn-number" onclick="appendNumber('3')">3</button>
+            <button class="btn-operator" onclick="appendOperator('+')">+</button>
+            
+            <button class="btn-number" onclick="appendNumber('0')">0</button>
+            <button class="btn-number" onclick="appendNumber('.')">.</button>
+            <button class="btn-equal" onclick="calculateResult()">=</button>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript: 邏輯控制
+        const display = document.getElementById('display');
+
+        // 添加數字到顯示屏
+        function appendNumber(number) {
+            // 如果顯示的是 Error，先清空
+            if (display.value === 'Error') {
+                display.value = '';
+            }
+            display.value += number;
+        }
+
+        // 添加運算符號
+        function appendOperator(operator) {
+            const lastChar = display.value.slice(-1);
+            // 防止連續輸入運算符
+            if (['+', '-', '*', '/', '%'].includes(lastChar)) {
+                return;
+            }
+            if (display.value === '' && operator !== '-') {
+                return; 
+            }
+            display.value += operator;
+        }
+
+        // 清除所有內容 (C)
+        function clearDisplay() {
+            display.value = '';
+        }
+
+        // 刪除最後一個字元 (DEL)
+        function deleteLast() {
+            display.value = display.value.toString().slice(0, -1);
+        }
+
+        // 計算結果 (=)
+        function calculateResult() {
+            try {
+                // 使用 eval 進行計算，這是最簡單的方法
+                // 注意：在實際大型專案中 eval 有安全隱患，但在此類簡單計算機中是可接受的
+                // 處理除以 0 的情況由 JavaScript 自動處理 (Infinity)
+                if (display.value === '') return;
+                
+                let result = eval(display.value);
+                
+                // 如果結果有小數點，限制小數點位數，避免精度問題
+                if (!Number.isInteger(result)) {
+                    result = result.toFixed(4); // 保持最多4位小數
+                    result = parseFloat(result); // 去掉尾部多餘的0
+                }
+                
+                display.value = result;
+            } catch (error) {
+                display.value = 'Error';
+                setTimeout(() => clearDisplay(), 1500); // 1.5秒後自動清除錯誤
+            }
+        }
+
+        // 支援鍵盤輸入 (額外功能)
+        document.addEventListener('keydown', function(event) {
+            const key = event.key;
+            if (/[0-9]/.test(key)) appendNumber(key);
+            if (['+', '-', '*', '/', '%', '.'].includes(key)) appendOperator(key);
+            if (key === 'Enter') calculateResult();
+            if (key === 'Backspace') deleteLast();
+            if (key === 'Escape') clearDisplay();
+        });
+    </script>
+</body>
+</html>
